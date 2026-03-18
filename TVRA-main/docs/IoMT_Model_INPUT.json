@@ -1,0 +1,1109 @@
+{
+    "json": {
+        "version": "1.0",
+        "encoding": "utf-8"
+    },
+    "ns": {
+        "IoMTProfile.External": "http:///IoMTProfile/External.ecore",
+        "tvra": "http://iomt.tvra",
+        "uml": "http://www.eclipse.org/uml2/5.0.0/UML"
+    },
+    "schemaLocation": {
+        "http:///IoMTProfile/External.ecore": "http://iomtprofile#//External"
+    },
+    "content": [
+        {
+            "id": "8cf6cd8d-dee3-4c81-837f-e08ab30f1c5d",
+            "eClass": "uml:Model",
+            "data": {
+                "name": "TVRAModel",
+                "packageImport": [
+                    {
+                        "id": "9e18154b-511b-4a44-b4b7-3c233139a361",
+                        "eClass": "uml:PackageImport",
+                        "data": {
+                            "importedPackage": "uml:Model pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#_0"
+                        }
+                    }
+                ],
+                "URI": "http://TVRAModel",
+                "packagedElement": [
+                    {
+                        "id": "74f71af7-56cb-49a9-b935-3950852b1adc",
+                        "eClass": "uml:Class",
+                        "data": {
+                            "name": "Patient",
+                            "nestedClassifier": [
+                                {
+                                    "id": "26e7fe85-0692-4d61-a2e4-e6de2ad384d2",
+                                    "eClass": "uml:Class",
+                                    "data": {
+                                        "name": "UsesNoEmail"
+                                    }
+                                },
+                                {
+                                    "id": "ae74862d-6117-4ed4-8463-de46e3751db7",
+                                    "eClass": "uml:Class",
+                                    "data": {
+                                        "name": "PasswordVerifier"
+                                    }
+                                },
+                                {
+                                    "id": "d97bcb4b-7dce-42fc-ba20-fd2d0af34f36",
+                                    "eClass": "uml:Class",
+                                    "data": {
+                                        "name": "PhysicalKey"
+                                    }
+                                },
+                                {
+                                    "id": "b08d7f45-896e-4b6d-bbc0-9f89a4206de7",
+                                    "eClass": "uml:Class",
+                                    "data": {
+                                        "name": "MS-LossOfIntegrity"
+                                    }
+                                },
+                                {
+                                    "id": "8bd480cc-10cc-4364-a5da-6f36634f4354",
+                                    "eClass": "uml:Class",
+                                    "data": {
+                                        "name": "TWAS-Availability"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": "357504ad-f017-4e9f-a2ef-3d7abc6510dc",
+                        "eClass": "uml:Class",
+                        "data": {
+                            "name": "Patients Phone",
+                            "nestedClassifier": [
+                                {
+                                    "id": "217a1c9f-3b25-47f3-914c-08111d2e9913",
+                                    "eClass": "uml:Class",
+                                    "data": {
+                                        "name": "CS-PersonalDevice"
+                                    }
+                                },
+                                {
+                                    "id": "cef7cbff-4b79-4019-994d-6cb3d9134510",
+                                    "eClass": "uml:Class",
+                                    "data": {
+                                        "name": "CS-SecureConfig"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": "1f781f5a-6c88-4503-be55-54642625686c",
+                        "eClass": "uml:Class",
+                        "data": {
+                            "name": "Sensor App",
+                            "nestedClassifier": [
+                                {
+                                    "id": "be808fcc-2f8b-4e62-bd5b-dc0c77b3dfd6",
+                                    "eClass": "uml:Class",
+                                    "data": {
+                                        "name": "CS-AccessControl"
+                                    }
+                                },
+                                {
+                                    "id": "4ffa90c1-8b74-45d8-af41-6108e5866310",
+                                    "eClass": "uml:Class",
+                                    "data": {
+                                        "name": "CS-Password"
+                                    }
+                                },
+                                {
+                                    "id": "bbee3582-d3d8-4366-a469-c9c32e0122b9",
+                                    "eClass": "uml:Class",
+                                    "data": {
+                                        "name": "CS-AuthenticationLimits"
+                                    }
+                                },
+                                {
+                                    "id": "95ccd89e-32cb-4a27-a784-e77a86dc0d54",
+                                    "eClass": "uml:Class",
+                                    "data": {
+                                        "name": "TWAS-TrojanTW"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": "b31151a3-fe9b-4153-b8e0-a85d8733ad61",
+                        "eClass": "uml:Class",
+                        "data": {
+                            "name": "Sensor",
+                            "nestedClassifier": [
+                                {
+                                    "id": "4d43022e-55c3-40fb-bf5f-0d203fe307c3",
+                                    "eClass": "uml:Class",
+                                    "data": {
+                                        "name": "CS-PersonalDevice"
+                                    }
+                                },
+                                {
+                                    "id": "f442f68e-f147-4d79-bbd2-30fc176a9b5d",
+                                    "eClass": "uml:Class",
+                                    "data": {
+                                        "name": "CS-SecureConfig"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": "27904430-4240-4384-9057-3c36690809aa",
+                        "eClass": "uml:Class",
+                        "data": {
+                            "name": "Public"
+                        }
+                    },
+                    {
+                        "id": "14044087-5ec2-4171-8ccc-b138c2f235af",
+                        "eClass": "uml:Class",
+                        "data": {
+                            "name": "Patients Work"
+                        }
+                    },
+                    {
+                        "id": "3dc29971-bd95-44a1-a64a-b848fb8e424c",
+                        "eClass": "uml:Class",
+                        "data": {
+                            "name": "Patients House"
+                        }
+                    },
+                    {
+                        "id": "36ffcb90-dea4-46c4-8443-d767dc78fe89",
+                        "eClass": "uml:Class",
+                        "data": {
+                            "name": "Patients Wifi",
+                            "nestedClassifier": [
+                                {
+                                    "id": "9b22895d-fc41-4f26-82e0-c9ecbcbad8a0",
+                                    "eClass": "uml:Class",
+                                    "data": {
+                                        "name": "CS-SecureConfig"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": "6064dc67-ff8e-4424-8919-22e9cfdc674a",
+                        "eClass": "uml:Class",
+                        "data": {
+                            "name": "Patients Router",
+                            "nestedClassifier": [
+                                {
+                                    "id": "509fbb90-4fd9-4a7c-a38c-a574e4b37cab",
+                                    "eClass": "uml:Class",
+                                    "data": {
+                                        "name": "CS-Unmanaged"
+                                    }
+                                },
+                                {
+                                    "id": "7136594f-4da9-408a-b14f-755956f80972",
+                                    "eClass": "uml:Class",
+                                    "data": {
+                                        "name": "CS-SecureConfig"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": "f893966d-878f-4de0-a165-f19f8c892b12",
+                        "eClass": "uml:Association",
+                        "data": {
+                            "eAnnotations": [
+                                {
+                                    "source": "org.eclipse.papyrus",
+                                    "details": [
+                                        {
+                                            "key": "nature",
+                                            "value": "UML_Nature"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "name": "manages",
+                            "memberEnd": [
+                                "/0/manages/patients%20phone",
+                                "/0/manages/patient"
+                            ],
+                            "ownedEnd": [
+                                {
+                                    "id": "3e82378c-7300-4539-9eef-477cef16865e",
+                                    "eClass": "uml:Property",
+                                    "data": {
+                                        "name": "patients phone",
+                                        "type": "/0/Patients%20Phone",
+                                        "association": "/0/manages"
+                                    }
+                                },
+                                {
+                                    "id": "1dcd9d2f-4712-43d8-a4cc-c492b4a75071",
+                                    "eClass": "uml:Property",
+                                    "data": {
+                                        "name": "patient",
+                                        "type": "/0/Patient",
+                                        "association": "/0/manages"
+                                    }
+                                }
+                            ],
+                            "navigableOwnedEnd": [
+                                "/0/manages/patients%20phone"
+                            ]
+                        }
+                    },
+                    {
+                        "id": "d2cdb1dc-208a-45b5-976a-f84358dcb50a",
+                        "eClass": "uml:Association",
+                        "data": {
+                            "eAnnotations": [
+                                {
+                                    "source": "org.eclipse.papyrus",
+                                    "details": [
+                                        {
+                                            "key": "nature",
+                                            "value": "UML_Nature"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "name": "relatesTo",
+                            "memberEnd": [
+                                "/0/relatesTo/sensor",
+                                "/0/relatesTo/patient"
+                            ],
+                            "ownedEnd": [
+                                {
+                                    "id": "0eca3dfc-94a4-4864-906d-6a2c0be7fb70",
+                                    "eClass": "uml:Property",
+                                    "data": {
+                                        "name": "sensor",
+                                        "type": "/0/Sensor",
+                                        "association": "/0/relatesTo"
+                                    }
+                                },
+                                {
+                                    "id": "0d10f406-7bcb-431a-ad8e-054837a1fa5a",
+                                    "eClass": "uml:Property",
+                                    "data": {
+                                        "name": "patient",
+                                        "type": "/0/Patient",
+                                        "association": "/0/relatesTo"
+                                    }
+                                }
+                            ],
+                            "navigableOwnedEnd": [
+                                "/0/relatesTo/patient"
+                            ]
+                        }
+                    },
+                    {
+                        "id": "593be5ad-71f9-49ee-8456-000524ccb086",
+                        "eClass": "uml:Association",
+                        "data": {
+                            "eAnnotations": [
+                                {
+                                    "source": "org.eclipse.papyrus",
+                                    "details": [
+                                        {
+                                            "key": "nature",
+                                            "value": "UML_Nature"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "name": "interactsWith",
+                            "memberEnd": [
+                                "/0/interactsWith/sensor%20app",
+                                "/0/interactsWith/patient"
+                            ],
+                            "ownedEnd": [
+                                {
+                                    "id": "93189551-7a27-4162-8fa7-1ee056f4324d",
+                                    "eClass": "uml:Property",
+                                    "data": {
+                                        "name": "sensor app",
+                                        "type": "/0/Sensor%20App",
+                                        "association": "/0/interactsWith"
+                                    }
+                                },
+                                {
+                                    "id": "21ac959e-6534-4149-9827-7c740a34018c",
+                                    "eClass": "uml:Property",
+                                    "data": {
+                                        "name": "patient",
+                                        "type": "/0/Patient",
+                                        "association": "/0/interactsWith"
+                                    }
+                                }
+                            ],
+                            "navigableOwnedEnd": [
+                                "/0/interactsWith/sensor%20app"
+                            ]
+                        }
+                    },
+                    {
+                        "id": "cee42299-2e81-4a66-b215-edc5d945f2c3",
+                        "eClass": "uml:Association",
+                        "data": {
+                            "eAnnotations": [
+                                {
+                                    "source": "org.eclipse.papyrus",
+                                    "details": [
+                                        {
+                                            "key": "nature",
+                                            "value": "UML_Nature"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "name": "hosts",
+                            "memberEnd": [
+                                "/0/hosts/sensor%20app",
+                                "/0/hosts/patients%20phone"
+                            ],
+                            "ownedEnd": [
+                                {
+                                    "id": "a69e1b0e-6ecd-4737-831a-9018c2c4f8b4",
+                                    "eClass": "uml:Property",
+                                    "data": {
+                                        "name": "sensor app",
+                                        "type": "/0/Sensor%20App",
+                                        "association": "/0/hosts"
+                                    }
+                                },
+                                {
+                                    "id": "a4661640-dc87-424a-bcbe-20503428497a",
+                                    "eClass": "uml:Property",
+                                    "data": {
+                                        "name": "patients phone",
+                                        "type": "/0/Patients%20Phone",
+                                        "association": "/0/hosts"
+                                    }
+                                }
+                            ],
+                            "navigableOwnedEnd": [
+                                "/0/hosts/sensor%20app"
+                            ]
+                        }
+                    },
+                    {
+                        "id": "1710d1d3-10e1-4987-8b82-427cec9d4bd4",
+                        "eClass": "uml:Association",
+                        "data": {
+                            "eAnnotations": [
+                                {
+                                    "source": "org.eclipse.papyrus",
+                                    "details": [
+                                        {
+                                            "key": "nature",
+                                            "value": "UML_Nature"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "name": "pairsViaBluetooth",
+                            "memberEnd": [
+                                "/0/pairsViaBluetooth/sensor",
+                                "/0/pairsViaBluetooth/patients%20phone"
+                            ],
+                            "ownedEnd": [
+                                {
+                                    "id": "f02d7a58-6e56-4074-8da5-428e865942a1",
+                                    "eClass": "uml:Property",
+                                    "data": {
+                                        "name": "sensor",
+                                        "type": "/0/Sensor",
+                                        "association": "/0/pairsViaBluetooth"
+                                    }
+                                },
+                                {
+                                    "id": "4d813dd9-1199-4336-b252-b5b4ce782079",
+                                    "eClass": "uml:Property",
+                                    "data": {
+                                        "name": "patients phone",
+                                        "type": "/0/Patients%20Phone",
+                                        "association": "/0/pairsViaBluetooth"
+                                    }
+                                }
+                            ],
+                            "navigableOwnedEnd": [
+                                "/0/pairsViaBluetooth/sensor"
+                            ]
+                        }
+                    },
+                    {
+                        "id": "25f40adb-7e3c-4dea-8f80-ce7f01d9e9ba",
+                        "eClass": "uml:Association",
+                        "data": {
+                            "eAnnotations": [
+                                {
+                                    "source": "org.eclipse.papyrus",
+                                    "details": [
+                                        {
+                                            "key": "nature",
+                                            "value": "UML_Nature"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "name": "locatedIn",
+                            "memberEnd": [
+                                "/0/locatedIn/public",
+                                "/0/locatedIn/patients%20phone"
+                            ],
+                            "ownedEnd": [
+                                {
+                                    "id": "b882d87e-385f-4dc0-bd58-da8b6d3059f9",
+                                    "eClass": "uml:Property",
+                                    "data": {
+                                        "name": "public",
+                                        "type": "/0/Public",
+                                        "association": "/0/locatedIn"
+                                    }
+                                },
+                                {
+                                    "id": "a6ee549a-53e0-4021-9ed4-23052e336445",
+                                    "eClass": "uml:Property",
+                                    "data": {
+                                        "name": "patients phone",
+                                        "type": "/0/Patients%20Phone",
+                                        "association": "/0/locatedIn"
+                                    }
+                                }
+                            ],
+                            "navigableOwnedEnd": [
+                                "/0/locatedIn/public"
+                            ]
+                        }
+                    },
+                    {
+                        "id": "96b5bd66-c8fc-46c7-aa26-35918e29e558",
+                        "eClass": "uml:Association",
+                        "data": {
+                            "eAnnotations": [
+                                {
+                                    "source": "org.eclipse.papyrus",
+                                    "details": [
+                                        {
+                                            "key": "nature",
+                                            "value": "UML_Nature"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "name": "locatedIn",
+                            "memberEnd": [
+                                "/0/locatedIn.1/patients%20work",
+                                "/0/locatedIn.1/patients%20phone"
+                            ],
+                            "ownedEnd": [
+                                {
+                                    "id": "ab683d3c-3a36-4629-9554-68b677f7ce15",
+                                    "eClass": "uml:Property",
+                                    "data": {
+                                        "name": "patients work",
+                                        "type": "/0/Patients%20Work",
+                                        "association": "/0/locatedIn.1"
+                                    }
+                                },
+                                {
+                                    "id": "2f6c700f-c6e7-4ff7-983f-11ad6eed1c94",
+                                    "eClass": "uml:Property",
+                                    "data": {
+                                        "name": "patients phone",
+                                        "type": "/0/Patients%20Phone",
+                                        "association": "/0/locatedIn.1"
+                                    }
+                                }
+                            ],
+                            "navigableOwnedEnd": [
+                                "/0/locatedIn.1/patients%20work"
+                            ]
+                        }
+                    },
+                    {
+                        "id": "45f1eeb3-4e46-4694-b0ae-62eefbca1b29",
+                        "eClass": "uml:Association",
+                        "data": {
+                            "eAnnotations": [
+                                {
+                                    "source": "org.eclipse.papyrus",
+                                    "details": [
+                                        {
+                                            "key": "nature",
+                                            "value": "UML_Nature"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "name": "locatedIn",
+                            "memberEnd": [
+                                "/0/locatedIn.2/patients%20phone",
+                                "/0/locatedIn.2/patients%20house"
+                            ],
+                            "ownedEnd": [
+                                {
+                                    "id": "aa3f096a-48c8-4558-b32c-bc51b00bd46a",
+                                    "eClass": "uml:Property",
+                                    "data": {
+                                        "name": "patients phone",
+                                        "type": "/0/Patients%20Phone",
+                                        "association": "/0/locatedIn.2"
+                                    }
+                                },
+                                {
+                                    "id": "75682fa2-1da5-4580-8eb5-1e3b08877521",
+                                    "eClass": "uml:Property",
+                                    "data": {
+                                        "name": "patients house",
+                                        "type": "/0/Patients%20House",
+                                        "association": "/0/locatedIn.2"
+                                    }
+                                }
+                            ],
+                            "navigableOwnedEnd": [
+                                "/0/locatedIn.2/patients%20house"
+                            ]
+                        }
+                    },
+                    {
+                        "id": "3ea85d42-9019-4f05-abe0-9d768de1fc46",
+                        "eClass": "uml:Association",
+                        "data": {
+                            "eAnnotations": [
+                                {
+                                    "source": "org.eclipse.papyrus",
+                                    "details": [
+                                        {
+                                            "key": "nature",
+                                            "value": "UML_Nature"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "name": "connectedTo",
+                            "memberEnd": [
+                                "/0/connectedTo/patients%20phone",
+                                "/0/connectedTo/patients%20wifi"
+                            ],
+                            "ownedEnd": [
+                                {
+                                    "id": "f3d63dd9-4196-44c1-88e6-e2ba84aeba32",
+                                    "eClass": "uml:Property",
+                                    "data": {
+                                        "name": "patients phone",
+                                        "type": "/0/Patients%20Phone",
+                                        "association": "/0/connectedTo"
+                                    }
+                                },
+                                {
+                                    "id": "2ababd67-0cc9-49dd-baa3-e53edeae8f4e",
+                                    "eClass": "uml:Property",
+                                    "data": {
+                                        "name": "patients wifi",
+                                        "type": "/0/Patients%20Wifi",
+                                        "association": "/0/connectedTo"
+                                    }
+                                }
+                            ],
+                            "navigableOwnedEnd": [
+                                "/0/connectedTo/patients%20wifi"
+                            ]
+                        }
+                    },
+                    {
+                        "id": "e60634b5-c040-4299-9bd3-42acf318dc22",
+                        "eClass": "uml:Association",
+                        "data": {
+                            "eAnnotations": [
+                                {
+                                    "source": "org.eclipse.papyrus",
+                                    "details": [
+                                        {
+                                            "key": "nature",
+                                            "value": "UML_Nature"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "name": "providedBy",
+                            "memberEnd": [
+                                "/0/providedBy/patients%20router",
+                                "/0/providedBy/patients%20wifi"
+                            ],
+                            "ownedEnd": [
+                                {
+                                    "id": "03315b26-6695-40b8-8441-1c6898145a81",
+                                    "eClass": "uml:Property",
+                                    "data": {
+                                        "name": "patients router",
+                                        "type": "/0/Patients%20Router",
+                                        "association": "/0/providedBy"
+                                    }
+                                },
+                                {
+                                    "id": "15c4cfe1-db39-40c8-a7e9-88374cb1a52f",
+                                    "eClass": "uml:Property",
+                                    "data": {
+                                        "name": "patients wifi",
+                                        "type": "/0/Patients%20Wifi",
+                                        "association": "/0/providedBy"
+                                    }
+                                }
+                            ],
+                            "navigableOwnedEnd": [
+                                "/0/providedBy/patients%20router"
+                            ]
+                        }
+                    },
+                    {
+                        "id": "cd74bf7b-4d89-40da-b610-599375e7aac0",
+                        "eClass": "uml:Association",
+                        "data": {
+                            "eAnnotations": [
+                                {
+                                    "source": "org.eclipse.papyrus",
+                                    "details": [
+                                        {
+                                            "key": "nature",
+                                            "value": "UML_Nature"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "memberEnd": [
+                                "/0/@packagedElement.19/sensor",
+                                "/0/@packagedElement.19/sensor%20app"
+                            ],
+                            "ownedEnd": [
+                                {
+                                    "id": "99e14712-e803-44ab-9181-52553210b74e",
+                                    "eClass": "uml:Property",
+                                    "data": {
+                                        "name": "sensor",
+                                        "type": "/0/Sensor",
+                                        "association": "/0/@packagedElement.19"
+                                    }
+                                },
+                                {
+                                    "id": "ae3b7f69-24ea-4b62-9f12-c5d6f3484936",
+                                    "eClass": "uml:Property",
+                                    "data": {
+                                        "name": "sensor app",
+                                        "type": "/0/Sensor%20App",
+                                        "association": "/0/@packagedElement.19"
+                                    }
+                                }
+                            ],
+                            "navigableOwnedEnd": [
+                                "/0/@packagedElement.19/sensor"
+                            ]
+                        }
+                    }
+                ],
+                "profileApplication": [
+                    {
+                        "id": "b488f02f-c335-466a-8941-c1051db855f9",
+                        "eClass": "uml:ProfileApplication",
+                        "data": {
+                            "eAnnotations": [
+                                {
+                                    "source": "http://www.eclipse.org/uml2/2.0.0/UML",
+                                    "references": [
+                                        "http://iomt.tvra#/"
+                                    ]
+                                }
+                            ],
+                            "appliedProfile": "uml:Profile pathmap://IoMTTVRA_PROFILE/TVRA.profile.uml#dd3656b0-efed-4c8a-829b-ce62b54a8a8b"
+                        }
+                    },
+                    {
+                        "id": "afa51fa1-9b28-4df1-a98b-25808830fbf7",
+                        "eClass": "uml:ProfileApplication",
+                        "data": {
+                            "eAnnotations": [
+                                {
+                                    "source": "http://www.eclipse.org/uml2/2.0.0/UML",
+                                    "references": [
+                                        "http://iomtprofile#/"
+                                    ]
+                                }
+                            ],
+                            "appliedProfile": "uml:Profile pathmap://IoMT_PROFILE/IoMT.profile.uml#7cd26dfb-691a-4ee5-9dde-3557dac2a2fa"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "id": "73c48ab0-8db5-465d-af6e-a3542a1bcfa7",
+            "eClass": "tvra:TVRAAsset",
+            "data": {
+                "base_Class": "/0/Patient",
+                "kind": "Adult",
+                "misbehaviours": [
+                    "/23"
+                ],
+                "trustworthinessattributesets": [
+                    "/24"
+                ],
+                "controlsets": [
+                    "/20",
+                    "/21",
+                    "/22"
+                ]
+            }
+        },
+        {
+            "id": "181f9949-9de2-48b0-954d-6ff6365d5e95",
+            "eClass": "tvra:TVRAAsset",
+            "data": {
+                "base_Class": "/0/Patients%20Phone",
+                "kind": "Smartphone",
+                "controlsets": [
+                    "/27",
+                    "/28"
+                ]
+            }
+        },
+        {
+            "id": "f51f5233-9e38-43e9-aa5a-bef31866fae6",
+            "eClass": "tvra:TVRAAsset",
+            "data": {
+                "base_Class": "/0/Sensor%20App",
+                "kind": "ApplicationProcess",
+                "trustworthinessattributesets": [
+                    "/32"
+                ],
+                "controlsets": [
+                    "/29",
+                    "/30",
+                    "/31"
+                ]
+            }
+        },
+        {
+            "id": "17735c77-7b16-4a8f-83db-25fc40a394d3",
+            "eClass": "tvra:TVRAAsset",
+            "data": {
+                "base_Class": "/0/Sensor",
+                "kind": "Sensor",
+                "controlsets": [
+                    "/25",
+                    "/26"
+                ]
+            }
+        },
+        {
+            "id": "1987c8f5-944b-4f1f-977d-fca6f7d5cabd",
+            "eClass": "tvra:TVRAAsset",
+            "data": {
+                "base_Class": "/0/Public",
+                "kind": "PublicSpace"
+            }
+        },
+        {
+            "id": "7b1c4d50-4080-47ba-aeb5-c4939e7699b3",
+            "eClass": "tvra:TVRAAsset",
+            "data": {
+                "base_Class": "/0/Patients%20Work",
+                "kind": "BoundedSpace"
+            }
+        },
+        {
+            "id": "a9aa01e9-1538-4520-affe-9c9a359e5755",
+            "eClass": "tvra:TVRAAsset",
+            "data": {
+                "base_Class": "/0/Patients%20House",
+                "kind": "PrivateSpace"
+            }
+        },
+        {
+            "id": "6bb3b524-0ab2-48e1-b40d-0ee42c8055bf",
+            "eClass": "tvra:TVRAAsset",
+            "data": {
+                "base_Class": "/0/Patients%20Wifi",
+                "kind": "WiFiLAN",
+                "controlsets": [
+                    "/33"
+                ]
+            }
+        },
+        {
+            "id": "af505d77-84cf-4cb0-b3de-446b2fa2b251",
+            "eClass": "tvra:TVRAAsset",
+            "data": {
+                "base_Class": "/0/Patients%20Router",
+                "kind": "Router",
+                "controlsets": [
+                    "/34",
+                    "/35"
+                ]
+            }
+        },
+        {
+            "id": "028c23f8-63aa-42d5-bf69-3ce374ac9abb",
+            "eClass": "tvra:NetworkDomain",
+            "data": {
+                "base_Association": "/0/manages",
+                "kind": "manages"
+            }
+        },
+        {
+            "id": "f03469cf-3954-4ed4-b164-00d0995d4370",
+            "eClass": "tvra:NetworkDomain",
+            "data": {
+                "base_Association": "/0/relatesTo",
+                "kind": "relatesTo"
+            }
+        },
+        {
+            "id": "ae490cd5-266d-4bf6-b1bc-00cece1c5d81",
+            "eClass": "tvra:NetworkDomain",
+            "data": {
+                "base_Association": "/0/interactsWith",
+                "kind": "interactsWith"
+            }
+        },
+        {
+            "id": "ec573c1c-76be-4e93-838e-0d3ec298c688",
+            "eClass": "tvra:NetworkDomain",
+            "data": {
+                "base_Association": "/0/hosts",
+                "kind": "hosts"
+            }
+        },
+        {
+            "id": "7c48027a-14d3-4d6c-aed6-869688ce3e9a",
+            "eClass": "tvra:NetworkDomain",
+            "data": {
+                "base_Association": "/0/pairsViaBluetooth",
+                "kind": "pairsViaBluetooth"
+            }
+        },
+        {
+            "id": "d5a1aeb5-bac8-448c-8a95-8cbd2b7ff0de",
+            "eClass": "tvra:NetworkDomain",
+            "data": {
+                "base_Association": "/0/locatedIn",
+                "kind": "locatedIn"
+            }
+        },
+        {
+            "id": "26d88a3c-0705-4ee4-b680-e7432474d097",
+            "eClass": "tvra:NetworkDomain",
+            "data": {
+                "base_Association": "/0/locatedIn.1",
+                "kind": "locatedIn"
+            }
+        },
+        {
+            "id": "7f4ad123-61b1-4683-b20a-279a12f6f6be",
+            "eClass": "tvra:NetworkDomain",
+            "data": {
+                "base_Association": "/0/locatedIn.2",
+                "kind": "locatedIn"
+            }
+        },
+        {
+            "id": "6697f6e1-5417-4468-be07-c24b89f239c4",
+            "eClass": "tvra:NetworkDomain",
+            "data": {
+                "base_Association": "/0/connectedTo",
+                "kind": "connectedTo"
+            }
+        },
+        {
+            "id": "5f35d53e-bbd9-475d-85ec-7e6a1f6bb62a",
+            "eClass": "tvra:NetworkDomain",
+            "data": {
+                "base_Association": "/0/providedBy",
+                "kind": "providedBy"
+            }
+        },
+        {
+            "id": "21f4d51c-467d-499c-900d-f19af873bdf3",
+            "eClass": "tvra:ControlSet",
+            "data": {
+                "kind": "CSUsesNoEmail",
+                "base_Class": "/0/Patient/UsesNoEmail",
+                "isProposed": "true",
+                "coverageLevel": "High",
+                "tvraasset": "/1"
+            }
+        },
+        {
+            "id": "3a17fa9c-2814-4826-8658-ede2ce252509",
+            "eClass": "tvra:ControlSet",
+            "data": {
+                "kind": "CSPasswordVerifier",
+                "base_Class": "/0/Patients%20Phone/PasswordVerifier",
+                "isProposed": "true",
+                "coverageLevel": "VeryLow",
+                "tvraasset": "/1"
+            }
+        },
+        {
+            "id": "ea4387d1-43ab-417d-ba96-668f7c3f6c0c",
+            "eClass": "tvra:ControlSet",
+            "data": {
+                "kind": "CSPhysicalKey",
+                "base_Class": "/0/Patient/PhysicalKey",
+                "isProposed": "true",
+                "tvraasset": "/1"
+            }
+        },
+        {
+            "id": "0992174a-3ff5-496f-b599-cc95c2ca0e8c",
+            "eClass": "tvra:Misbehaviour",
+            "data": {
+                "kind": "MSLossOfIntegrity",
+                "base_Class": "/0/Patient/MS-LossOfIntegrity",
+                "tvraasset": "/1"
+            }
+        },
+        {
+            "id": "70ea56de-c45b-4ab9-ad05-89a1a83349a9",
+            "eClass": "tvra:TrustworthinessAttributeSet",
+            "data": {
+                "base_Class": "/0/Patient/TWAS-Availability",
+                "kind": "TWASAvailability",
+                "trustworthinessLevel": "VeryLow",
+                "tvraasset": "/1"
+            }
+        },
+        {
+            "id": "69982d3d-f9f1-4fe3-8667-a35dd0593f8b",
+            "eClass": "tvra:ControlSet",
+            "data": {
+                "kind": "CSPersonalDevice",
+                "base_Class": "/0/Sensor/CS-PersonalDevice",
+                "isProposed": "true",
+                "tvraasset": "/4"
+            }
+        },
+        {
+            "id": "8ab0a995-0899-4009-a288-3b87abff4b85",
+            "eClass": "tvra:ControlSet",
+            "data": {
+                "kind": "CSSecureConfig",
+                "base_Class": "/0/Sensor/CS-SecureConfig",
+                "isProposed": "true",
+                "tvraasset": "/4"
+            }
+        },
+        {
+            "id": "5e724c22-72ce-4baf-b855-05b955120a97",
+            "eClass": "tvra:ControlSet",
+            "data": {
+                "kind": "CSPersonalDevice",
+                "base_Class": "/0/Patients%20Phone/CS-PersonalDevice",
+                "isProposed": "true",
+                "tvraasset": "/2"
+            }
+        },
+        {
+            "id": "58eb08a3-fa22-49af-8ecd-6fb2b9d55000",
+            "eClass": "tvra:ControlSet",
+            "data": {
+                "kind": "CSSecureConfig",
+                "base_Class": "/0/Patients%20Phone/CS-SecureConfig",
+                "isProposed": "true",
+                "tvraasset": "/2"
+            }
+        },
+        {
+            "id": "1be4353b-391a-41f9-91a4-cf7648f89fbf",
+            "eClass": "tvra:ControlSet",
+            "data": {
+                "kind": "CSAccessKey",
+                "base_Class": "/0/Sensor%20App/CS-AccessControl",
+                "isProposed": "true",
+                "tvraasset": "/3"
+            }
+        },
+        {
+            "id": "6d39840c-bd96-41a3-b1b5-d41b18898ba8",
+            "eClass": "tvra:ControlSet",
+            "data": {
+                "kind": "CSPassword",
+                "base_Class": "/0/Sensor%20App/CS-Password",
+                "isProposed": "true",
+                "tvraasset": "/3"
+            }
+        },
+        {
+            "id": "bed8dbc2-9220-41b1-bbeb-50318b10e11f",
+            "eClass": "tvra:ControlSet",
+            "data": {
+                "kind": "CSAuthenticationLimits",
+                "base_Class": "/0/Sensor%20App/CS-AuthenticationLimits",
+                "isProposed": "true",
+                "tvraasset": "/3"
+            }
+        },
+        {
+            "id": "7b8dfec4-4da7-41ba-a551-18463efa9215",
+            "eClass": "tvra:TrustworthinessAttributeSet",
+            "data": {
+                "base_Class": "/0/Sensor%20App/TWAS-TrojanTW",
+                "trustworthinessLevel": "VeryHigh",
+                "tvraasset": "/3"
+            }
+        },
+        {
+            "id": "6108755d-79c1-4af7-a59c-8c206ba57166",
+            "eClass": "tvra:ControlSet",
+            "data": {
+                "kind": "CSSecureConfig",
+                "base_Class": "/0/Patients%20Wifi/CS-SecureConfig",
+                "isProposed": "true",
+                "tvraasset": "/8"
+            }
+        },
+        {
+            "id": "2d439c23-72d4-4d73-b47f-25ff20cd1cee",
+            "eClass": "tvra:ControlSet",
+            "data": {
+                "kind": "CSUnmanaged",
+                "base_Class": "/0/Patients%20Router/CS-Unmanaged",
+                "isProposed": "true",
+                "tvraasset": "/9"
+            }
+        },
+        {
+            "id": "ff61ea78-9462-465d-8c3f-3fe41036d762",
+            "eClass": "tvra:ControlSet",
+            "data": {
+                "kind": "CSSecureConfig",
+                "base_Class": "/0/Patients%20Router/CS-SecureConfig",
+                "isProposed": "true",
+                "tvraasset": "/9"
+            }
+        },
+        {
+            "id": "3bc782b0-d821-449c-b6c8-6b1f370ac2da",
+            "eClass": "IoMTProfile.External:Person",
+            "data": {
+                "base_Class": "/0/Patient"
+            }
+        },
+        {
+            "id": "2a32645d-7e22-402d-97a0-370e40537f3a",
+            "eClass": "tvra:NetworkDomain",
+            "data": {
+                "base_Association": "/0/@packagedElement.19",
+                "kind": "pollsSensor"
+            }
+        }
+    ]
+}
