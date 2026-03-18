@@ -1,0 +1,160 @@
+version: '3.7'
+
+services:
+  proxy:
+    image: nginx:stable-alpine3.17
+    # If there are multiple deployments of the SSM on the same host then they each need to expose a different PROXY_EXTERNAL_PORT
+    ports:
+      - ${PROXY_EXTERNAL_PORT}:80
+    expose:
+      - 80
+    environment:
+      scheme: ${SERVICE_PROTOCOL:-http}
+      server_port: ${SERVICE_PORT:-8089}
+      documentation_url: ${DOCUMENTATION_URL}
+      keycloak_url: '${EXTERNAL_KEYCLOAK_AUTH_SERVER_URL:-http://keycloak:8080/auth}'
+      kc_proxy_pass: '${EXTERNAL_KEYCLOAK_AUTH_SERVER_URL:-http://keycloak:8080/auth}'
+      tomcat_port: ${TOMCAT_PORT}
+      realm_name: '${KEYCLOAK_REALM:-ssm-realm}'
+    # When nginx starts it does a health check on the "upstream" servers and if none of them in a group are present it will fail.
+    # Hence, nginx must start after the ssm and keycloak.
+    # See https://docs.nginx.com/nginx/admin-guide/load-balancer/tcp-health-check/
+    restart: on-failure
+    depends_on:
+      - ssm
+      - keycloak
+      - adaptor
+    entrypoint: /tmp/import/entrypoint.sh
+    volumes:
+      - type: bind
+        source: ./spyderisk/provisioning/nginx
+        target: /tmp/import
+    networks:
+      - smd_net
+    env_file:
+      - .env
+    extra_hosts:
+      - "host.docker.internal:172.17.0.1"
+
+  ssm:
+    image: spyderisk/system-modeller:${SPYDERISK_VERSION}
+    restart: on-failure
+    environment:
+      # The "SPRING" env variables override the values in application.properties
+      # https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-external-config
+      SPRING_DATA_MONGODB_HOST: mongo
+      # The KEYCLOAK URL must be the external address of the service + "/auth/"
+      KEYCLOAK_AUTH_SERVER_URL: ${SERVICE_PROTOCOL}://${SERVICE_DOMAIN}:${SERVICE_PORT}/auth/
+      KEYCLOAK_CREDENTIALS_SECRET: ${KEYCLOAK_CREDENTIALS_SECRET}
+      KEYCLOAK_REALM: "${KEYCLOAK_REALM:-ssm-realm}"
+      KEYCLOAK_RESOURCE: "${KEYCLOAK_RESOURCE:-system-modeller}"
+      KNOWLEDGEBASE_DOCS_QUERY_URL: https://docs.spyderisk.org/knowledgebase/q
+      # Knowledgebases source location (must match volume defined below)
+      KNOWLEDGEBASES_SOURCE_FOLDER: /knowledgebases
+      # Knowledgebases installation location (must match knowledgebases volume defined below)
+      KNOWLEDGEBASES_INSTALL_FOLDER: /opt/spyderisk/knowledgebases
+      DISPLAY_EULA: ${DISPLAY_EULA:-true}
+      EULA_HTML: ${EULA_HTML}
+    volumes:
+      # Persistent named volume for the jena-tdb storage
+      - type: volume
+        source: jena
+        target: /jena-tdb
+      # Knowledgebases source location (domain model zip bundles to install)
+      - type: bind
+        source: ./spyderisk/knowledgebases
+        target: /knowledgebases
+      # Persistent named volume for storage of knowledgebase data (domain model, images and palettes)
+      - type: volume
+        source: knowledgebases
+        target: /opt/spyderisk/knowledgebases
+    depends_on:
+      mongo:
+        condition: service_started
+      keycloak:
+        condition: service_healthy
+    networks:
+      - smd_net
+    env_file:
+      - .env
+    extra_hosts:
+      - "host.docker.internal:172.17.0.1"
+
+  keycloak:
+    image: keycloak/keycloak:21.0
+    # WARNING: THIS CONFIGURATION IS INSECURE AND SHOULD ONLY BE USED IN DEVELOPMENT SYSTEMS
+    # Override the normal entrypoint of `/opt/keycloak/bin/kc.sh`. See the file provisioning/keycloak/entrypoint.sh for details.
+    entrypoint: /tmp/import/entrypoint.sh
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USERNAME}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KEYCLOAK_CREDENTIALS_SECRET: ${KEYCLOAK_CREDENTIALS_SECRET}
+      PROXY_ADDRESS_FORWARDING: '${KEYCLOAK_PROXY_ADDRESS_FORWARDING:-false}'
+    healthcheck:
+      test: ["CMD", "/tmp/import/healthcheck.sh"]
+      start_period: 10s
+      interval: 30s
+      retries: 3
+      timeout: 5s
+    volumes:
+      - type: bind
+        source: ./spyderisk/provisioning/keycloak
+        target: /tmp/import
+    networks:
+      - smd_net
+    env_file:
+      - .env
+    extra_hosts:
+      - "host.docker.internal:172.17.0.1"
+
+  mongo:
+    image: mongo:5.0.16-focal
+    restart: on-failure
+    volumes:
+      - type: volume
+        source: mongo-db
+        target: /data/db
+      - type: volume
+        source: mongo-configdb
+        target: /data/configdb
+    networks:
+      - smd_net
+    extra_hosts:
+      - "host.docker.internal:172.17.0.1"
+
+  adaptor:
+    image: spyderisk/system-modeller-adaptor:${SPYDERISK_ADAPTOR_VERSION}
+    command: 'gunicorn -b 0.0.0.0:8000 -t 0 -w 4 -k uvicorn.workers.UvicornWorker app.main:app'
+    env_file:
+      - .env
+    networks:
+      - smd_net
+    depends_on:
+      - mongo
+    extra_hosts:
+      - "host.docker.internal:172.17.0.1"
+
+  ospd_openvas:
+    image: 'mirek186/ospd_openvas:latest'
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+    ports:
+      - '8000:8000'
+    networks:
+      - smd_net
+    extra_hosts:
+      - "host.docker.internal:172.17.0.1"
+    volumes:
+      - type: bind
+        source: ./src/medsec
+        target: /root/medsec
+
+
+networks:
+  smd_net:
+
+volumes:
+  jena:
+  knowledgebases:
+  mongo-db:
+  mongo-configdb:
