@@ -5,7 +5,7 @@
 [![Release](https://github.com/mahend72/TVRA/actions/workflows/release.yml/badge.svg)](https://github.com/mahend72/TVRA/actions/workflows/release.yml)
 
 Threat, Vulnerability and Risk Assessment tooling for IoMT and other
-cyber-physical systems, developed within the MedSecurance project.
+cyber-physical systems, developed within the MedSecurance project (https://www.medsecurance.org/).
 
 ## Overview
 
