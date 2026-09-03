@@ -1,0 +1,4 @@
+# Development/test tooling only. Each service under this repository has its
+# own runtime requirements.txt (see README.md "Dependencies" section for why
+# these are kept separate rather than merged into one file).
+pytest>=7.4,<9
