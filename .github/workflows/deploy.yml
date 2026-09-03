@@ -1,0 +1,99 @@
+name: Deploy
+
+# CD SKELETON — see docs/CI_CD.md "What remains intentionally disabled".
+#
+# This workflow is manual-only and does not perform any real deployment.
+# No safe, documented deployment target (server, cloud account, Kubernetes
+# cluster, or registry) currently exists in this repository — see
+# REPRODUCIBILITY.md, docs/ARCHITECTURE.md, and docs/THREAT_MODEL.md. Every
+# job below stops before doing anything to real infrastructure. It exists so
+# the pipeline shape (build -> staging -> smoke test -> approval ->
+# production) and the GitHub Environments / concurrency mechanics are in
+# place and reviewable, without inventing infrastructure that doesn't exist.
+#
+# Before this workflow can safely do anything real:
+#   1. A documented staging target must exist (host/registry/cluster).
+#   2. The `staging` and `production` GitHub Environments referenced below
+#      must be created manually in the repository settings (this session did
+#      not and will not do that — see docs/CI_CD.md).
+#   3. The security gaps in docs/THREAT_MODEL.md (no authentication on any
+#      service, CORS wildcard, hardcoded SpydeRisk dev credentials, disabled
+#      TLS verification, ...) must be addressed or explicitly risk-accepted
+#      for whatever is being deployed — this workflow must not become the
+#      thing that ships those gaps to a reachable environment.
+on:
+  workflow_dispatch:
+    inputs:
+      artifact_version:
+        description: >-
+          Version/tag identifying the build to deploy (informational only —
+          no deployment is performed while this workflow is disabled).
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    # Re-confirms the requested artifact reference exists conceptually.
+    # Does not build anything itself — see build.yml / release.yml for the
+    # actual build/package stage that runs before this workflow would ever
+    # be invoked.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Record deployment request
+        run: |
+          echo "Requested artifact/version: ${{ github.event.inputs.artifact_version || '(none specified)' }}"
+          echo "This workflow does not deploy anything yet — see docs/CI_CD.md."
+
+  staging:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      # url: set once a real staging endpoint exists
+    steps:
+      - name: TODO - deploy to staging
+        run: |
+          echo "TODO: no documented staging target exists in this repository yet."
+          echo "See docs/CI_CD.md 'Required GitHub Environment Secrets' for what"
+          echo "this step will eventually need (STAGING_* secrets, configured as"
+          echo "GitHub Environment secrets on the 'staging' environment, never in"
+          echo "this YAML)."
+          exit 0
+
+  smoke-test:
+    needs: staging
+    runs-on: ubuntu-latest
+    steps:
+      - name: TODO - smoke test the staging deployment
+        run: |
+          echo "TODO: no staging endpoint exists yet to smoke-test against."
+          exit 0
+
+  production:
+    needs: smoke-test
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      # url: set once a real production endpoint exists
+    # Prevent overlapping production deployments. Deliberately does NOT
+    # cancel an in-progress run — an interrupted deployment is worse than a
+    # queued one. Contrast with ci.yml/build.yml, which do cancel superseded
+    # runs since those never touch live infrastructure.
+    concurrency:
+      group: production-deployment
+      cancel-in-progress: false
+    # DISABLED. Do not remove this `if: false` until: (a) a real, documented
+    # production target exists, (b) the `production` GitHub Environment has
+    # required reviewers configured (manual approval happens automatically
+    # via that GitHub Environment protection rule once configured — no
+    # separate "approval" job is needed here), and (c) the security gate in
+    # item 10 of docs/CI_CD.md has been explicitly signed off.
+    if: false
+    steps:
+      - name: TODO - deploy to production
+        run: |
+          echo "Production deployment is intentionally disabled. See docs/CI_CD.md."
+          exit 1

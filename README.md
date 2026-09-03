@@ -1,252 +1,247 @@
 # TVRA Toolkit
-Threat, Vulnerability and Risk Assessment for MedSecurance / IoMT
 
-This repository contains a modular toolkit for **Threat, Vulnerability and Risk Assessment (TVRA)**, designed to support **Internet of Medical Things (IoMT)** and other safety-critical systems within the **MedSecurance** Project.
+[![CI](https://github.com/mahend72/TVRA/actions/workflows/ci.yml/badge.svg)](https://github.com/mahend72/TVRA/actions/workflows/ci.yml)
+[![Build](https://github.com/mahend72/TVRA/actions/workflows/build.yml/badge.svg)](https://github.com/mahend72/TVRA/actions/workflows/build.yml)
+[![Release](https://github.com/mahend72/TVRA/actions/workflows/release.yml/badge.svg)](https://github.com/mahend72/TVRA/actions/workflows/release.yml)
 
-It brings together:
-- Vulnerability scanning
-- Context-aware risk assessment (TVRA + Spyderisk)
-- AI-assisted threat modelling and mitigation
-- Centralised evidence management
-- Integration hooks for Assurance / O-ETB and other MedSecurance components
+Threat, Vulnerability and Risk Assessment tooling for IoMT and other
+cyber-physical systems, developed within the MedSecurance project.
 
----
+## Overview
 
-## Key Features
+This repository brings together four independently-deployed services around
+a shared evidence store:
 
-### Vulnerability Scanning
+1. **TVRA core API** (`deployment/src/medsec`) — vulnerability scanning via
+   OpenVAS, and threat/risk modelling via the SpydeRisk System Modeller.
+2. **Evidence Manager / centralDB** (`centralDB`) — versioned, SHA-256-hashed
+   storage for scan reports, threat models, and mitigation output.
+3. **AI-assisted threat modelling and mitigation** (`Final_Files`) — two
+   FastAPI services that call a remote LLM (OpenAI, Anthropic, Azure OpenAI,
+   Groq, Together AI, or a remote Ollama instance) to extend a threat list
+   and draft per-threat mitigation text.
+4. **Assurance / O-ETB integration** (`Assurance/build`) — a working example
+   of gating an assurance-case claim on evidence recorded in centralDB, built
+   against the (externally maintained, not included here) O-ETB engine.
 
-Identify exposed services and weaknesses in IOMT deployment.
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for how these communicate,
+including a data-flow diagram.
 
-- Lightweight service-level scanning using **OpenVAS** feeds (via the TVRA toolkit)  
-- Detection of:
-  - Known CVEs (firmware / OS)
-  - Misconfigurations (weak crypto, default credentials)
-  - Insecure or deprecated services  
-- Outputs formatted for downstream risk reasoning and evidence storage
+## Motivation and research problem
 
----
-### Contextual Risk Assessment
+Producing a defensible risk assessment for a connected medical device or
+similar cyber-physical system means combining several kinds of evidence —
+automated vulnerability scan results, a structured threat/risk model, and
+mitigation guidance — and being able to show *why* a given risk claim is
+considered addressed. This toolkit's problem statement is narrower than "AI
+security" in general: it is about (a) automating the mechanical parts of
+that pipeline (scanning, risk calculation, first-pass threat/mitigation
+drafting), and (b) keeping every output traceable to recorded, hash-verified
+evidence, so a human reviewer has something concrete to check rather than an
+unverifiable narrative.
 
-Perform structured, ISO/IEC 27005–inspired risk assessments tailored for IoMT and cyber-physical systems.
+## Key contributions
 
-- System- and component-level risk modelling  
-- Context establishment (assets, architecture, environment, regulations)  
-- Threat modelling aligned with frameworks such as **STRIDE** and **MITRE ATT\&CK**  
-- Exportable risk registers, attack paths, and recommendation artefacts
+- A working OpenVAS → SpydeRisk → evidence-store pipeline with SHA-256
+  integrity verification on every stored artefact.
+- A provider-agnostic client for LLM-assisted threat/mitigation drafting
+  (`Final_Files/remote_ai_client.py`), decoupled from any single vendor.
+- A demonstrated pattern for gating an assurance-case claim on recorded
+  evidence (`Assurance/build/files/KB/`), rather than an unchecked assertion.
+- A TVRA-model-to-SpydeRisk import path (`deployment/src/medsec/tvra_parser.py`)
+  that reconstructs assets, relationships, misbehaviours and controls from a
+  UML/TVRA JSON export.
 
----
-### Evidence Management (`centralDB`)
+## AI Assurance perspective
 
-Store all risk and vulnerability artefacts in a **central evidence repository**.
+Only the `Final_Files` services and one vision call in the TVRA core API
+(`api.get_plot_threat_model`) call a machine-learning model; everything else
+is deterministic tooling. [docs/AI_ASSURANCE.md](docs/AI_ASSURANCE.md) walks
+through reliability, groundedness, robustness, security, traceability,
+uncertainty, reproducibility, human oversight, and accountability for that
+AI-assisted surface specifically, with evidence drawn from the code and
+tests — not generic AI-assurance theory. The short version: LLM-generated
+threat/mitigation text should be treated as **unverified analyst input
+requiring human review**, not as a validated security control.
 
-- Versioned storage of evidence files (reports, JSON, logs, diagrams)  
-- Metadata management with **TinyDB** (timestamps, comments, hashes)  
-- REST API for:
-  - Uploading files or JSON artefacts  
-  - Listing and retrieving evidence by category/filename/version  
-  - Verifying integrity (SHA-256)  
-  - Deleting individual versions or full file histories  
+## Architecture overview
 
-This service acts as the **single point of truth** for evidence generated by TVRA, IoMT communication tools, and Assurance / O-ETB.
+```mermaid
+flowchart LR
+    Scan["OpenVAS scan"] --> TVRA["TVRA core API"]
+    Risk["SpydeRisk model"] --> TVRA
+    TVRA --> LLM_IN["AI threat/mitigation\n(Final_Files)"]
+    LLM_IN <--> LLM[("Remote LLM provider")]
+    TVRA --> Evidence[("centralDB\nhash-verified evidence")]
+    LLM_IN --> Evidence
+    Evidence --> Assurance["O-ETB assurance case"]
+```
 
----
+Full diagram and per-component detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-### Assurance / O-ETB Integration (`Assurance/build`)
-
-Integrate with the **O-ETB (Open Evidential Tool Bus)** to support evidence-driven assurance cases.
-
-- Docker build for the Assurance / O-ETB environment  
-- Combined Prolog + Python + FastAPI container  
-- Designed to retrieve required evidence from `centralDB` on demand  
-- Plays the evidence-consuming role in the broader MedSecurance pipeline
-
----
-
-## Repository Structure
+## Repository structure
 
 ```text
 .
-├── Assurance/
-│   └── build/          # Docker build for O-ETB / Assurance integration
-│       ├── Dockerfile
-│       ├── BUILD_GUIDE.md
-│       ├── entrypoint.sh
-│       └── README.md
+├── deployment/
+│   ├── src/medsec/      # TVRA core FastAPI service (OpenVAS + SpydeRisk)
+│   ├── spyderisk/       # SpydeRisk/Keycloak/nginx provisioning
+│   ├── Dockerfile       # Builds gvm-libs, openvas-scanner, ospd-openvas
+│   └── docker-compose*.yml
 │
-├── Final_Files/        # Threat modelling & mitigation final files
-│   ├── CONFIGURATION.md
-│   ├── Mitigation_client.py
-│   ├── Mitigation_endpoint_remote.py
-│   ├── config.py
-│   ├── prompts.py
-│   ├── remote_ai_client.py
-│   ├── requirements.txt
-│   ├── start_services.sh
-│   ├── threat_model.json
-│   ├── threat_model_client.py
-│   ├── threat_model_endpoint.py
-│   └── get_threats_OUTPUT.json (example output)
+├── centralDB/           # Evidence Management System (API + TinyDB storage)
 │
-├── centralDB/          # Evidence Management System (API + storage)
-│   ├── app/
-│   ├── sample/
-│   ├── Dockerfile
-│   ├── requirements.txt
-│   ├── example_agent.py
-│   └── README.md
+├── Final_Files/         # AI-assisted threat modelling & mitigation services
 │
-├── deployment/         # TVRA deployment stack
-│   ├── src/
-│   ├── spyderisk/
-│   ├── Dockerfile
-│   ├── docker-compose.yml
-│   ├── docker-compose-dev.yml
-│   ├── deploy_tvra.sh
-│   ├── stop_tvra.sh
-│   ├── .env
-│   └── sources.list
+├── Assurance/build/     # O-ETB integration build + example KB contribution
 │
-└── docs/               # Documentation & example artefacts
-    ├── IoMT_Model_INPUT.json
-    ├── diagrams.md
-    ├── openapi.json
-    ├── user_guide.md
-    ├── get_threats_OUTPUT.json
-    ├── get_threats_raw_mode_OUTPUT.json
-    ├── get_recommednation_full_OUTPUT.json
-    ├── vuln_scanner_get_report_OUTPUT.html
-    └── vuln_scanner_get_report_OUTPUT.json
+├── docs/                # Architecture, threat model, assurance docs,
+│                         # sample I/O artefacts, OpenAPI spec, user guide
+│
+├── tests/                # Deterministic unit tests (see REPRODUCIBILITY.md)
+├── archive/               # Legacy CLI wrapper, superseded by the API
+└── requirements-dev.txt  # Test tooling only — see "Dependencies" below
 ```
----
+
 ## Installation
 
-> **Note:** For realistic deployments, this toolkit is intended to run on a Linux host with Docker, especially when placed close to the networks and devices being assessed.
+> This toolkit's full Docker stack is intended for a Linux host with Docker.
+> Individual services (`Final_Files`, `centralDB`) can be run directly with
+> Python 3.11 on any OS. See [docs/LIMITATIONS.md](docs/LIMITATIONS.md) for
+> what this constrains.
 
 ### Prerequisites
 
-- [Docker](https://www.docker.com/)
-- [Docker Compose](https://docs.docker.com/compose/)
-- **Python 3.10+** if you plan to run components like `Final_Files` or `centralDB` directly outside of Docker.
+- [Docker](https://www.docker.com/) and [Docker Compose](https://docs.docker.com/compose/) — for the full TVRA/OpenVAS/SpydeRisk stack
+- Python 3.10+ — to run `Final_Files` or `centralDB` directly
 
----
-
-### 1. Clone the Repository
+### Clone
 
 ```bash
-git clone https://github.com/MedSecurance/TVRA.git
+git clone https://github.com/mahend72/TVRA.git
 cd TVRA
 ```
 
-### 2. Configure Environment Variables (TVRA Stack)
-Most deployment settings are controlled via the `.env` file in `deployment/`.
+### Dependencies
+
+Each service is deployed as an independent container and has its own
+`requirements.txt`; two of them pin genuinely incompatible dependency
+versions (`deployment/src/requirements.txt` requires `pydantic~=1.10`,
+`Final_Files/requirements.txt` requires `pydantic>=2.0.0`), so they are kept
+separate rather than merged into one file. See
+[docs/LIMITATIONS.md](docs/LIMITATIONS.md) for the full explanation and
+[REPRODUCIBILITY.md](REPRODUCIBILITY.md) for exactly which files to install
+for a given task.
+
+## Quick start
+
+Run the deterministic test suite (no external services required):
+
+```bash
+python3.11 -m venv .venv && source .venv/bin/activate
+pip install -r requirements-dev.txt -r deployment/src/requirements.txt
+python -m pytest tests/ -v
+```
+
+Run the Evidence Manager and AI-assisted services directly:
+
+```bash
+# Evidence Manager
+cd centralDB && pip install -r requirements.txt && uvicorn app.main:app --reload
+
+# AI-assisted threat modelling / mitigation (needs your own LLM provider API key)
+cd Final_Files && pip install -r requirements.txt && ./start_services.sh
+```
+
+Run the full TVRA/OpenVAS/SpydeRisk stack (Linux + Docker):
 
 ```bash
 cd deployment
-nano .env
+cp .env.example .env   # edit — see SECURITY.md before changing any default
+./deploy_tvra.sh        # or: docker compose -f docker-compose.yml up --build
 ```
-Important variables typically include:
-  - Database credentials and connection strings
-  - Service hostnames and ports
 
-External URLs for:
-  - Threat modelling services
-  - Evidence Manager (`centralDB`)
-  - Assurance / O-ETB or other MedSecurance components
+Full step-by-step instructions, including per-service commands and
+expected outputs, are in [REPRODUCIBILITY.md](REPRODUCIBILITY.md).
 
-Check inline comments in .env and docs/user_guide.md for the full set of variables and their roles.
-
-### 3. Build and Start the TVRA Stack
-From the `deployment/` directory:
+## Example commands
 
 ```bash
-# Option A: helper script
-./deploy_tvra.sh
+# Start a scan via the TVRA core API
+curl -X PUT "http://localhost:8080/v1/scan/weekly_scan" \
+  -H "Content-Type: application/json" \
+  -d '{"target": "192.168.1.100", "port_list": "T:22,80,443"}'
 
-# Option B: docker compose directly
-docker compose -f docker-compose.yml up --build
-```
-This will:
-  - Build images for the TVRA services (risk modeller, APIs, supporting tools)
-  - Start the containers as defined in docker-compose.yml
+# Ask the AI mitigation service to draft mitigations for a threats file
+python Final_Files/Mitigation_client.py   # edit the placeholder api_key first
 
-To stop the stack:
-
-```bash
-./stop_tvra.sh
-# or
-docker compose down
+# Upload a report to the evidence store
+curl -X POST "http://localhost:9000/upload-json/threats" \
+  -H "Content-Type: application/json" \
+  -d @centralDB/sample/get_threats_OUTPUT.json
 ```
 
-## 4. Run the Evidence Manager (`centralDB`)
-You can run `centralDB` as part of your compose setup or independently.
+## Evaluation
 
-From `centralDB/`:
+There is no benchmark suite or labelled dataset in this repository — see
+[docs/LIMITATIONS.md](docs/LIMITATIONS.md#coverage-and-evaluation). What is
+verified automatically is the deterministic logic covered by `tests/`
+(configuration validation, TVRA model parsing, evidence error handling,
+scan-target validation, threat simplification/sorting — 29 tests as of this
+writing, see [REPRODUCIBILITY.md](REPRODUCIBILITY.md)). LLM-generated output
+quality is not scored against a reference by anything in this repository.
 
-```bash
-cd centralDB
-docker build -t evidence-manager .
-docker run -p 9000:9000 -v ./local_data:/app/data evidence-manager
-```
+## Reproducibility
 
-Access the API documentation at:
-  - http://localhost:9000/docs
+See [REPRODUCIBILITY.md](REPRODUCIBILITY.md) for exact commands, expected
+output, and — importantly — what is *not* currently reproducible from this
+repository alone (notably the O-ETB assurance-case engine itself, which is
+maintained in a private upstream repository).
 
-From there you can:
-  - Upload risk and vulnerability reports, JSON threat outputs, etc.
-  - List, download, and delete evidence per category/filename/version.
+## CI/CD
 
-### 5. Build and Run the Assurance / O-ETB Container
-From `Assurance/build/`:
+Every pull request against `main` runs syntax validation, blocking lint,
+the test suite, an informational dependency/security scan, and Docker build
+validation for the one Dockerfile that builds standalone from this
+repository (`centralDB`) — see the badges above. Merges to `main` trigger a
+build/artifact-recording workflow; version tags (`vX.Y.Z`) trigger a release
+workflow that packages a reproducibility bundle with checksums. A deployment
+workflow skeleton exists (`staging → smoke test → production`) but performs
+no real deployment — no safe deployment target is documented for this
+project yet, and known security gaps (see below) intentionally block it.
+Full pipeline diagram, job-by-job detail, required secrets, and the
+deployment security gate: [docs/CI_CD.md](docs/CI_CD.md).
 
-```bash
-cd Assurance/build
+## Threat and security considerations
 
-# Build image (see BUILD_GUIDE.md for any repo layout assumptions)
-docker build -t o-etb:latest .
+See [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md) for the full analysis and
+[SECURITY.md](SECURITY.md) for the vulnerability-reporting process. In
+summary: **none of the FastAPI services in this repository implement
+authentication**, and several other gaps are documented (CORS wildcard on
+the TVRA core API, hardcoded SpydeRisk dev credentials, disabled TLS
+verification for SpydeRisk calls, no prompt-injection defences on the
+LLM-calling paths). This toolkit is intended for a local development
+environment or a fully isolated lab network, consistent with
+`SECURITY.md`'s existing guidance — do not expose it to an untrusted network
+without adding the mitigations listed in
+[docs/THREAT_MODEL.md](docs/THREAT_MODEL.md#8-recommended-near-term-mitigations-not-yet-implemented).
 
-docker run -it --rm \
-  -p 8080:8080 \
-  -v "$(pwd)/Assurance:/Assurance" \
-  o-etb:latest
-```
-Access the O-ETB FastAPI interface:
-  - http://localhost:8080/docs
+## Limitations
 
-### 6. Threat Modelling Services (`Final_Files`)
-From `Final_Files/`:
+See [docs/LIMITATIONS.md](docs/LIMITATIONS.md) for the full list, covering
+dataset/benchmark coverage, external-service dependence, generalisation
+beyond the IoMT example, adversarial-condition testing, dependency version
+sensitivity, and hardware/deployment assumptions.
 
-```bash
-cd Final_Files
+## Citation
 
-python -m venv .venv
-source .venv/bin/activate   # On Windows: .venv\Scripts\activate
+If you use this software, please cite it — see [CITATION.cff](CITATION.cff).
+Note: that file currently has a `TODO` for a DOI, which does not yet exist
+for this project.
 
-pip install -r requirements.txt
+## License
 
-./start_services.sh
-```
-
-Use:
-  - threat_model_client.py to submit models and retrieve threats
-  - Mitigation_client.py to obtain mitigation suggestions
-
-Configuration and example usage are documented in CONFIGURATION.md.
-
-### Accessing Services
-Exact URLs/ports depend on your .env and docker-compose.yml, but common defaults are:
-  - TVRA / Risk APIs – see deployment/docker-compose.yml and docs/openapi.json
-  - Evidence Manager (centralDB) – http://localhost:9000/docs
-  - Assurance / O-ETB – http://localhost:8080/docs
-  - Threat Modelling Endpoints – as specified in Final_Files/CONFIGURATION.md
-
-Deploying Individual Components
-You don’t have to run the full stack. You can deploy components independently:
-  - TVRA core only: Keep only core services in deployment/docker-compose.yml (risk engine, DB, API).
-  - centralDB only: Build and run from centralDB/ as shown above to act as a standalone evidence store.
-  - Assurance / O-ETB only: Deploy from Assurance/build/ and connect it to an existing evidence manager.
-  - Threat modelling only: Run the endpoints and clients in Final_Files/ on a separate host if needed.
-
-
-### License
-This project is licensed under the MIT License.
+MIT — see [LICENSE](LICENSE). **The copyright holder line in `LICENSE` is
+currently a placeholder pending confirmation** (see the professionalisation
+report for this repository); do not treat it as final until that is
+resolved.

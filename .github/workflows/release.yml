@@ -1,0 +1,137 @@
+name: Release
+
+# Only fires on a version tag (vX.Y.Z) or manual dispatch — never on an
+# ordinary push. See docs/CI_CD.md for the full pipeline and for why GitHub
+# Release *creation* is wired up but intentionally left disabled below.
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    # Re-verify required quality gates at the exact tagged commit, rather
+    # than trusting that main's CI run still reflects what's being tagged.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt -r deployment/src/requirements.txt
+
+      - name: Syntax check
+        run: python -m compileall -q Assurance Final_Files centralDB deployment/src tests
+
+      - name: Test suite
+        run: python -m pytest tests/ -v
+
+      - name: Blocking lint
+        run: |
+          pip install ruff
+          ruff check --select E9,F63,F7,F82 Assurance Final_Files centralDB deployment/src tests
+
+  build-release-artifacts:
+    needs: verify
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Determine release version
+        id: meta
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            echo "version=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=manual-${GITHUB_SHA::12}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: docker/setup-buildx-action@v3
+
+      # Same scope as build.yml: only centralDB builds standalone from this
+      # repository. See ci.yml's docker-build-validation job for why
+      # Assurance/build and deployment/Dockerfile are check-only, not built.
+      - name: Build centralDB release image (not pushed)
+        uses: docker/build-push-action@v6
+        with:
+          context: centralDB
+          file: centralDB/Dockerfile
+          push: false
+          tags: tvra/centraldb:${{ steps.meta.outputs.version }}
+          outputs: type=docker,dest=release-artifacts/centraldb-${{ steps.meta.outputs.version }}.tar
+
+      - name: Package reproducibility bundle
+        run: |
+          mkdir -p release-artifacts
+          tar -czf "release-artifacts/tvra-reproducibility-${{ steps.meta.outputs.version }}.tar.gz" \
+            README.md \
+            REPRODUCIBILITY.md \
+            LICENSE \
+            CITATION.cff \
+            SECURITY.md \
+            docs/ARCHITECTURE.md \
+            docs/THREAT_MODEL.md \
+            docs/AI_ASSURANCE.md \
+            docs/LIMITATIONS.md \
+            docs/CI_CD.md \
+            Final_Files/requirements.txt \
+            centralDB/requirements.txt \
+            deployment/src/requirements.txt \
+            Assurance/build/files/api/requirements.txt \
+            requirements-dev.txt
+
+      - name: Generate checksums
+        run: |
+          cd release-artifacts
+          shasum -a 256 * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ steps.meta.outputs.version }}
+          path: release-artifacts/
+          retention-days: 90
+
+  create-github-release:
+    needs: build-release-artifacts
+    runs-on: ubuntu-latest
+    # INTENTIONALLY DISABLED. This job is fully configured (least-privilege
+    # permissions, artifact download, `gh release create`) but must not run
+    # until the repository owner decides this project is ready to publish
+    # public GitHub Releases. To enable: delete the `if: false` line below.
+    # See docs/CI_CD.md "What remains intentionally disabled".
+    if: false
+    permissions:
+      # Only this job gets write access — every other job in every workflow
+      # in this repository stays at the default `contents: read`.
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-${{ needs.build-release-artifacts.outputs.version }}
+          path: release-artifacts
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ needs.build-release-artifacts.outputs.version }}" \
+            release-artifacts/* \
+            --title "${{ needs.build-release-artifacts.outputs.version }}" \
+            --generate-notes

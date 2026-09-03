@@ -1,0 +1,133 @@
+name: Build
+
+# Runs after changes land on main, or on demand. Responsibility is limited to
+# validating, building, and recording artifacts — it never deploys anything.
+# See docs/CI_CD.md for the full pipeline diagram and what each stage does.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    # Defensive re-validation: this workflow can be triggered independently
+    # of ci.yml (e.g. via workflow_dispatch on an arbitrary ref), so it does
+    # not assume ci.yml already ran successfully for this exact commit.
+    runs-on: ubuntu-latest
+    outputs:
+      git-sha: ${{ steps.meta.outputs.git-sha }}
+      short-sha: ${{ steps.meta.outputs.short-sha }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install test tooling
+        run: pip install -r requirements-dev.txt -r deployment/src/requirements.txt
+
+      - name: Syntax check (compileall)
+        run: python -m compileall -q Assurance Final_Files centralDB deployment/src tests
+
+      - name: Run test suite
+        run: python -m pytest tests/ -v
+
+      - name: Blocking lint (errors only)
+        run: |
+          pip install ruff
+          ruff check --select E9,F63,F7,F82 Assurance Final_Files centralDB deployment/src tests
+
+      - name: Record commit metadata
+        id: meta
+        run: |
+          echo "git-sha=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+          echo "short-sha=${GITHUB_SHA::12}" >> "$GITHUB_OUTPUT"
+
+  build-images:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      # Only centralDB builds standalone from this repository's tracked
+      # files — see the docker-build-validation job in ci.yml for why
+      # Assurance/build/Dockerfile and deployment/Dockerfile are excluded
+      # from a real build here (external O-ETB source; gitignored OpenVAS
+      # feed data; and deployment/Dockerfile isn't even what
+      # deployment/docker-compose.yml deploys — see docs/CI_CD.md).
+      - name: Build centralDB image (not pushed)
+        uses: docker/build-push-action@v6
+        with:
+          context: centralDB
+          file: centralDB/Dockerfile
+          push: false
+          tags: |
+            tvra/centraldb:${{ needs.validate.outputs.short-sha }}
+            tvra/centraldb:main
+          outputs: type=docker,dest=/tmp/centraldb-image.tar
+
+      - name: Upload centralDB image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: centraldb-image-${{ needs.validate.outputs.short-sha }}
+          path: /tmp/centraldb-image.tar
+          retention-days: 14
+
+  record-manifest:
+    needs: [validate, build-images]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write build manifest
+        run: |
+          mkdir -p build-meta
+          cat > build-meta/manifest.json <<EOF
+          {
+            "workflow": "${{ github.workflow }}",
+            "run_id": "${{ github.run_id }}",
+            "run_number": "${{ github.run_number }}",
+            "triggered_by": "${{ github.event_name }}",
+            "ref": "${{ github.ref }}",
+            "git_sha": "${{ needs.validate.outputs.git-sha }}",
+            "built_at_utc": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "images_built": [
+              {
+                "name": "tvra/centraldb",
+                "tags": ["${{ needs.validate.outputs.short-sha }}", "main"],
+                "dockerfile": "centralDB/Dockerfile",
+                "pushed": false
+              }
+            ],
+            "images_lint_checked_only": [
+              {
+                "name": "assurance-oetb",
+                "dockerfile": "Assurance/build/Dockerfile",
+                "reason": "requires an externally-supplied O-ETB source tree not present in this repository"
+              },
+              {
+                "name": "tvra-core-openvas",
+                "dockerfile": "deployment/Dockerfile",
+                "reason": "requires gitignored OpenVAS feed data (deployment/nvt/); not the image deployment/docker-compose.yml actually runs"
+              }
+            ]
+          }
+          EOF
+          cat build-meta/manifest.json
+
+      - name: Upload build manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-manifest-${{ needs.validate.outputs.short-sha }}
+          path: build-meta/manifest.json
+          retention-days: 90

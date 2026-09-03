@@ -1,0 +1,168 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Least-privilege default: nothing in this workflow needs to write to the
+# repository, packages, or anything else. Override per-job only if a future
+# job genuinely needs more (none currently do).
+permissions:
+  contents: read
+
+# Cancel superseded runs on the same PR/branch so CI doesn't queue up stale
+# work — safe here because CI never deploys anything (contrast with
+# deploy.yml's production job, which deliberately does NOT cancel in-flight
+# runs).
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install test tooling
+        run: pip install -r requirements-dev.txt
+
+      # Also installs the TVRA core API's dependencies (python-gvm, lxml,
+      # xmltodict, validators, ...) so the OpenVAS-target-validation and
+      # threat-simplification tests run instead of skipping. These are
+      # pure-Python packages; they do not require the OpenVAS/gvm-libs
+      # binaries built in deployment/Dockerfile.
+      - name: Install TVRA core API dependencies (for full test coverage)
+        run: pip install -r deployment/src/requirements.txt
+
+      - name: Syntax check (compileall)
+        run: python -m compileall -q Assurance Final_Files centralDB deployment/src tests
+
+      - name: Run test suite
+        run: python -m pytest tests/ -v
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install ruff
+        run: pip install ruff
+
+      # Blocking: syntax errors and undefined names only (E9, F63, F7, F82).
+      # Deliberately not a full style lint — see CONTRIBUTING.md.
+      - name: Ruff (errors only)
+        run: ruff check --select E9,F63,F7,F82 Assurance Final_Files centralDB deployment/src tests
+
+  security-scan:
+    runs-on: ubuntu-latest
+    # Informational only, deliberately. This repository has pre-existing,
+    # documented findings (see docs/THREAT_MODEL.md) and pins dependency
+    # versions per service (see docs/LIMITATIONS.md); both dependency bumps
+    # and code-level security fixes are deliberate, separately-reviewed
+    # decisions rather than something CI should force by going red.
+    # continue-on-error keeps both checks visible on every PR without
+    # blocking merges.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install pip-audit and bandit
+        run: pip install pip-audit bandit
+
+      - name: Audit each service's pinned dependencies
+        run: |
+          set -x
+          status=0
+          for req in requirements-dev.txt Final_Files/requirements.txt centralDB/requirements.txt deployment/src/requirements.txt Assurance/build/files/api/requirements.txt; do
+            echo "== $req =="
+            pip-audit -r "$req" || status=1
+          done
+          exit $status
+
+      - name: Bandit static security scan
+        run: bandit -r deployment/src/medsec Final_Files centralDB/app Assurance/build/files/api
+
+  docker-build-validation:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # centralDB is the only Dockerfile in this repository that builds
+          # standalone, from this repo's own tracked files, in a reasonable
+          # time. It gets a real, full `docker build` on every PR.
+          - name: centralDB
+            context: centralDB
+            dockerfile: centralDB/Dockerfile
+            mode: build
+
+          # Assurance/build/Dockerfile does `COPY Assurance /Assurance`,
+          # expecting an externally-supplied O-ETB engine directory
+          # (Assurance/build/Assurance/) that is not part of this repository
+          # — see docs/ARCHITECTURE.md and REPRODUCIBILITY.md. A full build
+          # will always fail here for that structural reason, not because of
+          # a code defect, so it would never be a meaningful pass/fail signal.
+          # It gets a Dockerfile syntax/lint check instead (no image built).
+          - name: assurance-oetb
+            context: Assurance/build
+            dockerfile: Assurance/build/Dockerfile
+            mode: check
+
+          # deployment/Dockerfile compiles gvm-libs/openvas-scanner/
+          # ospd-openvas from source and expects deployment/nvt/{plugins,
+          # products,advisories} (the OpenVAS vulnerability feed), which is
+          # deliberately gitignored (large, frequently-updated, fetched
+          # separately — see .gitignore and docs/LIMITATIONS.md) and is not
+          # even the image deployment/docker-compose.yml actually runs (that
+          # compose file pulls the third-party image
+          # mirek186/ospd_openvas:latest for the ospd_openvas service — see
+          # docs/CI_CD.md). A full build is neither reproducible from this
+          # repo nor representative of what's deployed, and would also be
+          # very slow for routine PR CI. It gets a syntax/lint check only.
+          - name: tvra-core-openvas
+            context: deployment
+            dockerfile: deployment/Dockerfile
+            mode: check
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build ${{ matrix.name }} image (no push)
+        if: matrix.mode == 'build'
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          push: false
+          tags: tvra-ci/${{ matrix.name }}:${{ github.sha }}
+
+      - name: Lint-check ${{ matrix.name }} Dockerfile (build context unavailable)
+        if: matrix.mode == 'check'
+        run: |
+          docker buildx build \
+            --file "${{ matrix.dockerfile }}" \
+            --check \
+            "${{ matrix.context }}"
