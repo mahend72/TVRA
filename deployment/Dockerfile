@@ -2,7 +2,7 @@
 FROM ubuntu:22.04
 
 # Set environment variables
-ENV LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib \
+ENV LD_LIBRARY_PATH=/usr/local/lib \
     INSTALL_PREFIX=/usr/local \
     MEDSEC_HOME=/root/medsec \
     PATH=$PATH:/usr/local/sbin:/root/medsec: \

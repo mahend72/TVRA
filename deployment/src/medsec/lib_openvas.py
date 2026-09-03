@@ -8,6 +8,7 @@ import os
 from gvm.protocols.latest import Osp
 from gvm.protocols.ospv1 import create_vt_selection_element
 from gvm.xml import XmlCommand
+from gvm.errors import RequiredArgument, InvalidArgument
 from fastapi import HTTPException
 from logger import get_logger
 

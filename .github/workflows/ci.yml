@@ -90,7 +90,14 @@ jobs:
       - name: Install pip-audit and bandit
         run: pip install pip-audit bandit
 
+      # continue-on-error here (in addition to the job-level setting above)
+      # is required, not redundant: without it, a non-zero exit from this
+      # step would skip the Bandit step below entirely, since job-level
+      # continue-on-error only controls whether the *job's* failure blocks
+      # the workflow — it does not make later steps run after an earlier
+      # step fails.
       - name: Audit each service's pinned dependencies
+        continue-on-error: true
         run: |
           set -x
           status=0
@@ -111,8 +118,10 @@ jobs:
         include:
           # centralDB is the only Dockerfile in this repository that builds
           # standalone, from this repo's own tracked files, in a reasonable
-          # time. It gets a real, full `docker build` on every PR.
-          - name: centralDB
+          # time. It gets a real, full `docker build` on every PR. The image
+          # name/tag below is lowercase (Docker repository names must be
+          # lowercase) even though the source directory is centralDB.
+          - name: centraldb
             context: centralDB
             dockerfile: centralDB/Dockerfile
             mode: build
