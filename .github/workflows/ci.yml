@@ -76,8 +76,12 @@ jobs:
     # versions per service (see docs/LIMITATIONS.md); both dependency bumps
     # and code-level security fixes are deliberate, separately-reviewed
     # decisions rather than something CI should force by going red.
-    # continue-on-error keeps both checks visible on every PR without
-    # blocking merges.
+    #
+    # Each scanner step below captures its own exit code, prints the full
+    # findings, records a summary, and then exits 0 on purpose — so the job
+    # is genuinely green, not red-but-ignored. continue-on-error is kept
+    # only as a backstop for a step failing for an unrelated reason (e.g.
+    # pip install itself failing), not as the mechanism that hides findings.
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
@@ -90,25 +94,69 @@ jobs:
       - name: Install pip-audit and bandit
         run: pip install pip-audit bandit
 
-      # continue-on-error here (in addition to the job-level setting above)
-      # is required, not redundant: without it, a non-zero exit from this
-      # step would skip the Bandit step below entirely, since job-level
-      # continue-on-error only controls whether the *job's* failure blocks
-      # the workflow — it does not make later steps run after an earlier
-      # step fails.
+      # Always scans every requirements file (the loop never breaks on a
+      # finding) and always prints pip-audit's full output to the job log.
+      # The step itself exits 0 regardless of findings — this is an
+      # informational baseline scan, not a merge gate — but a non-zero
+      # finding is still surfaced as a `::warning::` annotation and recorded
+      # in the job summary so it stays visible rather than silently green.
       - name: Audit each service's pinned dependencies
-        continue-on-error: true
         run: |
-          set -x
+          set +e
           status=0
+          findings=""
           for req in requirements-dev.txt Final_Files/requirements.txt centralDB/requirements.txt deployment/src/requirements.txt Assurance/build/files/api/requirements.txt; do
             echo "== $req =="
-            pip-audit -r "$req" || status=1
+            pip-audit -r "$req"
+            rc=$?
+            if [ "$rc" -ne 0 ]; then
+              status=1
+              findings="$findings- \`$req\`\n"
+            fi
           done
-          exit $status
 
+          if [ "$status" -ne 0 ]; then
+            echo "::warning::pip-audit found known vulnerabilities in one or more pinned requirements files — see the job log above for details."
+            {
+              echo "### pip-audit (informational): vulnerabilities found"
+              echo
+              echo "Findings detected in:"
+              echo
+              printf '%b' "$findings"
+              echo
+              echo "Non-blocking. Tracked as known security debt — see \`docs/THREAT_MODEL.md\` and \`docs/LIMITATIONS.md\`. Full scanner output is in the job log above."
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "pip-audit: no known vulnerabilities found in any pinned requirements file."
+            echo "### pip-audit (informational): no known vulnerabilities found" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          # Informational scan: never fail the job on findings.
+          exit 0
+
+      # Same pattern as above: full Bandit output is printed, a finding is
+      # surfaced via a warning annotation and the job summary, and the step
+      # always exits 0.
       - name: Bandit static security scan
-        run: bandit -r deployment/src/medsec Final_Files centralDB/app Assurance/build/files/api
+        run: |
+          set +e
+          bandit -r deployment/src/medsec Final_Files centralDB/app Assurance/build/files/api
+          rc=$?
+
+          if [ "$rc" -ne 0 ]; then
+            echo "::warning::Bandit found potential security issues — see the job log above for details."
+            {
+              echo "### Bandit (informational): findings detected"
+              echo
+              echo "Bandit exited with status $rc. Non-blocking. Tracked as known security debt — see \`docs/THREAT_MODEL.md\`. Full scanner output is in the job log above."
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Bandit: no issues found."
+            echo "### Bandit (informational): no issues found" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          # Informational scan: never fail the job on findings.
+          exit 0
 
   docker-build-validation:
     runs-on: ubuntu-latest
